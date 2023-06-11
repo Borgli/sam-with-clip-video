@@ -1,3 +1,6 @@
+import argparse
+import os.path
+
 import psutil
 import GPUtil
 import time
@@ -58,4 +61,12 @@ def log_system_resources(log_file):
             # Wait for a while before getting the next reading
             time.sleep(1)
 
-log_system_resources('resource_log.csv')
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog="Resource Monitor",
+                                     description="Monitors the system resources and saves them to the file "
+                                                 "'resource_log.csv'. A folder can be given and it will then save it"
+                                                 "to that folder.")
+    parser.add_argument('--log_dir', default="./")
+    args = parser.parse_args()
+    log_system_resources(os.path.join(args.log_dir, 'resource_log.csv'))
