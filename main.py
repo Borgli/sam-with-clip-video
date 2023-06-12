@@ -72,7 +72,7 @@ def run_segment_video():
     print(f"Creating log folders at {log_folder_path}")
     log_folder_path.mkdir(parents=True, exist_ok=True)
 
-    with open("system_info.json", 'w') as f:
+    with open(Path(log_folder_path).joinpath("system_info.json"), 'w') as f:
         json.dump(system_info, f)
 
     # Run script in another process called resource_monitor.py and send in the path of the log folder
