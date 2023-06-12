@@ -1,7 +1,10 @@
+import csv
+import json
 import os
 import urllib
 import time
 from functools import lru_cache
+from pathlib import Path
 from random import randint
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -182,39 +185,55 @@ def segment_video(
     fps = cap.get(cv2.CAP_PROP_FPS)
     total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
+    # Write to log
+    with open(Path(output_path).parent.joinpath("video_info.json"), "w") as f:
+        json.dump({
+            "name": Path(video_path).name,
+            "width": frame_width,
+            "height": frame_height,
+            "fps": fps,
+            "total_frames": total_frames
+        }, f)
+
     # Create a VideoWriter object to save the output video
     out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+    with open(Path(output_path).parent.joinpath("runtime.csv"), 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            ["Frame", "Time Start", "Time End", "Performance"])
+        frame_count = 1
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if ret == True:
+                print(f"Working on frame {frame_count} / {int(total_frames)}")
 
-    frame_count = 1
-    while (cap.isOpened() and frame_count < 2):
-        print(f"Working on frame {frame_count} / {int(total_frames)}")
-        frame_count += 1
-        ret, frame = cap.read()
-        if ret == True:
-            time_now = time.time()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                time_now = time.time()
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # reduce the size to save gpu memory
-            frame = adjust_image_size(frame)
-            masks = mask_generator.generate(frame)
-            masks = filter_masks(
-                frame,
-                masks,
-                predicted_iou_threshold,
-                stability_score_threshold,
-                query,
-                clip_threshold,
-            )
-            frame = draw_masks(frame, masks)
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                # reduce the size to save gpu memory
+                frame = adjust_image_size(frame)
+                masks = mask_generator.generate(frame)
+                masks = filter_masks(
+                    frame,
+                    masks,
+                    predicted_iou_threshold,
+                    stability_score_threshold,
+                    query,
+                    clip_threshold,
+                )
+                frame = draw_masks(frame, masks)
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-            # Write the frame into the output video file
-            out.write(frame)
-            performance = time.time() - time_now
-            print(
-                f"This took {performance:.2f} seconds. ETA: {(total_frames - frame_count) * performance:.2f} seconds.")
-        else:
-            break
+                # Write the frame into the output video file
+                out.write(frame)
+                time_after = time.time()
+                performance = time_after - time_now
+                print(
+                    f"This took {performance:.2f} seconds. ETA: {(total_frames - frame_count) * performance:.2f} seconds.")
+                writer.writerow([frame_count, time_now, time_after, performance])
+                frame_count += 1
+            else:
+                break
 
     # Release everything when the job is finished
     cap.release()

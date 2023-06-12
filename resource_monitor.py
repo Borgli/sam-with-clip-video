@@ -23,7 +23,7 @@ def get_gpu_temp_and_power():
 def log_system_resources(log_file):
     with open(log_file, 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Time", "CPU Usage", "Memory Usage", "GPU Usage", "GPU Memory Usage", "Disk Usage", "Network Usage", "GPU Temperature", "GPU Power Usage"])
+        writer.writerow(["Time", "CPU Usage(%)", "Memory Usage(%)", "Memory Bytes", "GPU Usage", "GPU Memory Usage", "Disk Usage(%)", "Bytes Sent", "Bytes Recv", "GPU Temperature", "GPU Power Usage"])
 
         # Get initial network stats
         net_io_start = psutil.net_io_counters()
@@ -35,8 +35,14 @@ def log_system_resources(log_file):
             # Get CPU usage
             cpu_usage = psutil.cpu_percent()
 
+            # Get CPU temp
+            #cpu_average_temp = psutil.sensors_temperatures()
+
+            # Get CPU power
+
             # Get Memory usage
             memory_usage = psutil.virtual_memory().percent
+            memory_usage_used = psutil.virtual_memory().used
 
             # Get GPU usage
             GPUs = GPUtil.getGPUs()
@@ -56,7 +62,7 @@ def log_system_resources(log_file):
             gpu_temp, gpu_power = get_gpu_temp_and_power()
 
             # Write to CSV file
-            writer.writerow([current_time, cpu_usage, memory_usage, gpu_usage, gpu_memory_usage, disk_usage, bytes_sent, bytes_recv, gpu_temp, gpu_power])
+            writer.writerow([current_time, cpu_usage, memory_usage, memory_usage_used, gpu_usage, gpu_memory_usage, disk_usage, bytes_sent, bytes_recv, gpu_temp, gpu_power])
 
             # Wait for a while before getting the next reading
             time.sleep(1)

@@ -1,3 +1,4 @@
+import json
 import sys
 
 from sam_with_clip import segment_video
@@ -48,29 +49,42 @@ def run_segment_video():
 
     print(f"Starting experiment: {exp_id}")
 
+    hyperparameters = {
+        "predicted_iou_threshold": 0.9,
+        "stability_score_threshold": 0.8,
+        "clip_threshold": 0.9,
+        "query": "polyp"
+    }
+
     # Get system info
     system_info = {
         "platform": platform.platform(),
+        "machine": platform.machine(),
         "processor": platform.processor(),
+        "num_cores": psutil.cpu_count(),
+        "frequency": psutil.cpu_freq(),
         "gpu": gpu_info
     }
     print(f"System info: {system_info}")
 
     # Create log folder with the name of the experiment ID and include the GPU model name
-    log_folder_path = Path(f"{exp_id}_{gpu_info.get('name', 'cpu')}").resolve()
+    log_folder_path = Path(f"{exp_id}_{gpu_info.get('name', platform.processor())}").resolve()
     print(f"Creating log folders at {log_folder_path}")
     log_folder_path.mkdir(parents=True, exist_ok=True)
+
+    with open("system_info.json", 'w') as f:
+        json.dump(system_info, f)
 
     # Run script in another process called resource_monitor.py and send in the path of the log folder
     resource_monitor_process = subprocess.Popen([sys.executable, "resource_monitor.py", "--log_dir", str(log_folder_path)])
 
     segment_video(
-        predicted_iou_threshold=0.9,
-        stability_score_threshold=0.8,
-        clip_threshold=0.9,
+        predicted_iou_threshold=hyperparameters["predicted_iou_threshold"],
+        stability_score_threshold=hyperparameters["stability_score_threshold"],
+        clip_threshold=hyperparameters["clip_threshold"],
         video_path="video.avi",
-        query="polyp",
-        output_path="output.avi"
+        query=hyperparameters["query"],
+        output_path=os.path.join(log_folder_path, "output.avi")
     )
 
     # Stop the resource_monitor.py script
