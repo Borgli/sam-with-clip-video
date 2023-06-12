@@ -204,7 +204,7 @@ def segment_video(
         frame_count = 1
         while cap.isOpened():
             ret, frame = cap.read()
-            if ret == True:
+            if ret:
                 print(f"Working on frame {frame_count} / {int(total_frames)}")
 
                 time_now = time.time()

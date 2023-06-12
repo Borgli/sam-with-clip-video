@@ -72,6 +72,9 @@ def run_segment_video():
     print(f"Creating log folders at {log_folder_path}")
     log_folder_path.mkdir(parents=True, exist_ok=True)
 
+    with open(Path(log_folder_path).joinpath("hyperparameters.json"), 'w') as f:
+        json.dump(hyperparameters, f)
+
     with open(Path(log_folder_path).joinpath("system_info.json"), 'w') as f:
         json.dump(system_info, f)
 
