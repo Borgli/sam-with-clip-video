@@ -59,5 +59,7 @@ if __name__ == '__main__':
 
     experiment = subprocess.Popen([Path(log_folder_path).joinpath("run_sam_with_clip.py").resolve(), log_folder_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = experiment.communicate()
+    print(stdout)
+    print(stderr)
 
 
