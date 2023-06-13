@@ -1,11 +1,23 @@
 import argparse
 import os.path
+import signal
 
 import psutil
 import GPUtil
 import time
 import csv
 import subprocess
+
+keep_running = True
+
+
+def kill_process(sig, frame):
+    global keep_running
+    keep_running = False
+
+
+signal.signal(signal.SIGTERM, kill_process)
+
 
 def get_gpu_temp_and_power():
     try:
@@ -20,6 +32,7 @@ def get_gpu_temp_and_power():
         temperature = power = None
     return temperature, power
 
+
 def log_system_resources(log_file):
     with open(log_file, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -28,7 +41,7 @@ def log_system_resources(log_file):
         # Get initial network stats
         net_io_start = psutil.net_io_counters()
 
-        while True:
+        while keep_running:
             # Get current time
             current_time = time.ctime()
 
@@ -69,6 +82,7 @@ def log_system_resources(log_file):
 
 
 if __name__ == '__main__':
+    print("Hello world")
     parser = argparse.ArgumentParser(prog="Resource Monitor",
                                      description="Monitors the system resources and saves them to the file "
                                                  "'resource_log.csv'. A folder can be given and it will then save it"

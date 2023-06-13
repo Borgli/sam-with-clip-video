@@ -2,6 +2,8 @@ import argparse
 import json
 import platform
 import re
+import shutil
+import signal
 import sys
 
 import psutil
@@ -35,11 +37,6 @@ def run_segment_video(log_folder_path):
     }
     print(f"System info: {system_info}")
 
-    # Update the name of the log folder path
-    log_folder_path = Path(log_folder_path).rename(Path(
-        f"{log_folder_path}_{gpu_info.get('name', platform.processor())}_{gpu_info.get('count', psutil.cpu_count())}_units").resolve())
-    print(f"Changed log folder name to '{log_folder_path}'")
-
     # Run script in another process called resource_monitor.py and send in the path of the log folder
     resource_monitor_process = subprocess.Popen([sys.executable, "resource_monitor.py", "--log_dir", str(log_folder_path)])
 
@@ -56,10 +53,26 @@ def run_segment_video(log_folder_path):
     )
 
     # Stop the resource_monitor.py script
-    resource_monitor_process.terminate()
-    results = list(filter(lambda x: re.match(r"\d+-(.*)"), os.listdir(log_folder_path)))
-    environment = re.search(r"\d+-(.*)", results[0]).group(1)
-    Path(log_folder_path).rename(Path(log_folder_path).joinpath(f"{environment}"))
+    os.kill(resource_monitor_process.pid, signal.SIGTERM)
+    resource_monitor_process.wait()
+
+    # Update the name of the log folder path and move files
+    log_folder_path = Path(log_folder_path).rename(Path(
+        f"{log_folder_path}_{gpu_info.get('name', platform.processor())}_{gpu_info.get('count', psutil.cpu_count())}_units"))
+
+    print(f"Changed log folder name to '{log_folder_path}'")
+
+    results = list(filter(lambda x: re.match(r"\d+-.*", x), os.listdir(log_folder_path)))
+    search = re.search(r"(\d+)-(.*)", results[0])
+    environment = search.group(2)
+    log_folder_path = Path(log_folder_path).rename(f"{log_folder_path}-{environment}")
+
+    jobid = search.group(1)
+    pattern = re.compile(fr'{jobid}\.(err|out)$')
+    files = [f for f in os.listdir(os.getcwd()) if pattern.search(f)]
+    shutil.move(Path(files[0]).resolve(), Path(log_folder_path).joinpath(files[0]))
+    shutil.move(Path(files[1]).resolve(), Path(log_folder_path).joinpath(files[1]))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

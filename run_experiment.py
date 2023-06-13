@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 import datetime
@@ -42,6 +43,7 @@ if __name__ == '__main__':
         print(f"Job {jobid} added to the queue on partition '{info}'. ")
         with open(Path(log_folder_path).joinpath(f"{jobid}-{info}"), "w") as f:
             f.write(f"{jobid}-{info}")
+
     if stderr.decode():
         print(stderr.decode())
 
