@@ -68,7 +68,7 @@ def run_segment_video():
     print(f"System info: {system_info}")
 
     # Create log folder with the name of the experiment ID and include the GPU model name
-    log_folder_path = Path(f"{exp_id}_{gpu_info.get('name', platform.processor())}").resolve()
+    log_folder_path = Path(f"{exp_id}_{gpu_info.get('name', platform.processor())}_{gpu_info.get('count', psutil.cpu_count)}").resolve()
     print(f"Creating log folders at {log_folder_path}")
     log_folder_path.mkdir(parents=True, exist_ok=True)
 
