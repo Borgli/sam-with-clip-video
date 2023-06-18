@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name="sam+clip"
-#SBATCH -p dgx2q # partition (queue)
+#SBATCH -p a100q # partition (queue)
 #SBATCH -N 1 # number of nodes
 #SBATCH -n 1  # number of cores
 #SBATCH --gres=gpu:1

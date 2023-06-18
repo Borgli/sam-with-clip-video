@@ -238,3 +238,21 @@ def segment_video(
     # Release everything when the job is finished
     cap.release()
     out.release()
+
+
+if __name__ == '__main__':
+    hyperparameters = {
+        "predicted_iou_threshold": 0.9,
+        "stability_score_threshold": 0.8,
+        "clip_threshold": 0.9,
+        "query": "polyp"
+    }
+
+    segment_video(
+        predicted_iou_threshold=hyperparameters["predicted_iou_threshold"],
+        stability_score_threshold=hyperparameters["stability_score_threshold"],
+        clip_threshold=hyperparameters["clip_threshold"],
+        video_path="video.avi",
+        query=hyperparameters["query"],
+        output_path="output.avi"
+    )

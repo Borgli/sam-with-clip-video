@@ -37,11 +37,14 @@ def run_segment_video(log_folder_path):
     }
     print(f"System info: {system_info}")
 
+    with open(Path(log_folder_path).joinpath("system_info.json"), 'w') as f:
+        json.dump(system_info, f)
+
+    with open(Path(log_folder_path).joinpath("hyperparameters.json"), 'r') as f:
+        hyperparameters = json.load(f)
+
     # Run script in another process called resource_monitor.py and send in the path of the log folder
     resource_monitor_process = subprocess.Popen([sys.executable, "resource_monitor.py", "--log_dir", str(log_folder_path)])
-
-    with open(Path(log_folder_path).joinpath("hyperparameters.json")) as f:
-        hyperparameters = json.load(f)
 
     segment_video(
         predicted_iou_threshold=hyperparameters["predicted_iou_threshold"],

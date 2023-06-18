@@ -31,7 +31,8 @@ if __name__ == '__main__':
         shutil.copy2(Path("run_sam_with_clip.sh"), Path(log_folder_path).joinpath("run_sam_with_clip.sh"))
 
     experiment = subprocess.Popen(
-        ["sbatch", "--parsable", Path(log_folder_path).joinpath("run_sam_with_clip.sh"), log_folder_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ["sbatch", "--parsable", Path(log_folder_path).joinpath("run_sam_with_clip.sh"), log_folder_path],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = experiment.communicate()
     jobid = stdout.decode().strip()
     if jobid.isdigit():
